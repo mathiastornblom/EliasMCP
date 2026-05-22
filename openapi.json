@@ -1,0 +1,3711 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "ELIAS 18 API",
+    "version": "18.2209.0",
+    "description": "For all routes except for the eLux routes, *api* needs to be included in the path."
+  },
+  "externalDocs": {
+    "description": "See also ELIAS 18 uDocs Documentation",
+    "url": "https://www.unicon-software.com/udocs"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:22130/api"
+    }
+  ],
+  "tags": [
+    {
+      "name": "General Routes",
+      "description": "General routes are available for all containers."
+    },
+    {
+      "name": "Authentication Routes",
+      "description": "Authentication routes are used for authentication and access control."
+    },
+    {
+      "name": "Container Routes",
+      "description": "Container routes are operations on containers."
+    },
+    {
+      "name": "Certificate Routes",
+      "description": "Certificate routes are all routes for signing and certificates for all containers."
+    },
+    {
+      "name": "Solution Routes",
+      "description": "Solution routes help solve image definitions and find conflicts."
+    },
+    {
+      "name": "eLux Routes",
+      "description": "eLux routes allow eLux clients to request files. However, if the route is called from a browser, the UI is shown."
+    }
+  ],
+  "paths": {
+    "/{container}/about": {
+      "get": {
+        "summary": "Get about information",
+        "tags": [
+          "Container Routes"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "description": "Get copyright and container information for *container* about ELIAS.",
+        "responses": {
+          "200": {
+            "description": "Getting about information successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/about"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/authenticate": {
+      "post": {
+        "summary": "Send authentication",
+        "tags": [
+          "Authentication Routes"
+        ],
+        "description": "Send authentication information to server.",
+        "requestBody": {
+          "description": "Username, domain and password are needed.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/authentication"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/authenticationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authError"
+          }
+        }
+      }
+    },
+    "/accessControls": {
+      "get": {
+        "summary": "Get access control overview",
+        "tags": [
+          "Authentication Routes"
+        ],
+        "description": "Get an overview of all access controls. Note, this needs global admin rights to use.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Getting access control overview successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/access"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/messageId"
+          }
+        }
+      }
+    },
+    "/accessControl": {
+      "post": {
+        "summary": "Set access control",
+        "tags": [
+          "Authentication Routes"
+        ],
+        "description": "Set an access control. Note, this needs global admin rights.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/access"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/messageId"
+          },
+          "400": {
+            "$ref": "#/components/responses/messageId"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/messageId"
+          }
+        }
+      }
+    },
+    "/accessControl/{_id}": {
+      "delete": {
+        "summary": "Delete an access control",
+        "tags": [
+          "Authentication Routes"
+        ],
+        "description": "Delete an access control with ID *_id*. Note, this needs global admin rights.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/_id"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/messageId"
+          },
+          "400": {
+            "$ref": "#/components/responses/messageId"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/messageId"
+          }
+        }
+      }
+    },
+    "/changePassword": {
+      "post": {
+        "summary": "Change the admin password",
+        "tags": [
+          "Authentication Routes"
+        ],
+        "description": "Change the admin password.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "oldPassword": {
+                    "type": "string"
+                  },
+                  "newPassword": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password change successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/success"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          }
+        }
+      }
+    },
+    "/container/{containerName}": {
+      "get": {
+        "summary": "Check if a container is valid",
+        "tags": [
+          "General Routes"
+        ],
+        "description": "Check whether the container named *containerName* is valid in the database.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/containerName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The container is valid.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/success"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new container",
+        "tags": [
+          "General Routes"
+        ],
+        "description": "Create a new container named *containerName* and set up the database.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/containerName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/containerList"
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      },
+      "put": {
+        "summary": "Rename a container",
+        "tags": [
+          "General Routes"
+        ],
+        "description": "Rename the container named *containerName* to the new name *name* if possible.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/containerName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/containerList"
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "description": "Return an error message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/containerResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/authenticationFailureResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a container",
+        "tags": [
+          "General Routes"
+        ],
+        "description": "Delete the container named *containerName* if possible.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/containerName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/containerList"
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "description": "Return an error message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/containerResponse"
+                    },
+                    {
+                      "$ref": "#/components/schemas/authenticationFailureResponse"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/containers": {
+      "get": {
+        "summary": "Get a list of all containers",
+        "tags": [
+          "General Routes"
+        ],
+        "description": "Get a list with the names of all available containers in the database.",
+        "responses": {
+          "200": {
+            "description": "Returns an array of containers.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/containerSummary"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/verify": {
+      "get": {
+        "summary": "Verifiy a token",
+        "tags": [
+          "General Routes"
+        ],
+        "description": "Verify a token given by the authentication.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/authenticationToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token verification result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/verificationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/verify/{paramToken}": {
+      "get": {
+        "summary": "Verifiy a token",
+        "tags": [
+          "General Routes"
+        ],
+        "description": "Verify a token given by the authentication.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/paramToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token verification result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/verificationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/{container}/checkimport/{uuid}": {
+      "get": {
+        "summary": "Check a specific import status",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Check the current status of an import operation with the ID *uuid* for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/uuid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checking status successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string"
+                    },
+                    "log": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/cleanup": {
+      "delete": {
+        "summary": "Clean container from all unused packages",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Clean container *container* from all unused EPMs and FPMs.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Result whether files were deleted.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/epm/{epm}": {
+      "delete": {
+        "summary": "Delete an EPM",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Delete an EPM from the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/epm"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/epms": {
+      "get": {
+        "summary": "Retrieve all EPMs",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Retrieve a list of all EPM metadata for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieving EPMs was successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/epm"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/export/container": {
+      "get": {
+        "summary": "Export a container",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Export the complete container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/zipFile"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/export/{imageName}.idf": {
+      "get": {
+        "summary": "Export an image as IDF file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Export an image *imageName* of the container *container* as an IDF file.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The IDF file.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/export/{imageName}.idt": {
+      "get": {
+        "summary": "Export an image template as IDT file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Export an image template *imageName* of the container *container* as an IDT file.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The IDT file.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/export/{imageName}.jidf": {
+      "get": {
+        "summary": "Export an image as JIDF file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Export an image *imageName* of the container *container* as a JIDF file.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The JIDF file.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/export/{imageName}.sig": {
+      "get": {
+        "summary": "Export the signature for an image",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Export the signature for the image *imageName* of the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The signature file.",
+            "content": {
+              "application/force-download": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/export/{imageName}.stw": {
+      "get": {
+        "summary": "Export an image as StickWizz file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Export an image *imageName* of the container *container* as a StickWizz file including all necessary files. The optional parameter *stickWizzDescription* can be used for a description shown in StickWizz.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/stickWizzDescription"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/zipFile"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/export/{imageName}.zip": {
+      "get": {
+        "summary": "Export an image as .zip file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Export an image *imageName* of the container *container* as a .zip file including all necessary files.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/zipFile"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/fpms": {
+      "get": {
+        "summary": "Retrieve all FPMs",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Retrieve a list of all FPM metadata for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieving FPMs was successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/fpm"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/idf/{imageName}.idf": {
+      "get": {
+        "summary": "Get an image",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Get an image definition for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image retrieval successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an image",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Update an image definition for the container *container* and return the updated image.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "overwrite": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "idf": {
+                    "$ref": "#/components/schemas/idf"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image update successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "422": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an image",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Delete an image definition for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image deletion successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/success"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "422": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/idt/{imageName}.idt": {
+      "get": {
+        "summary": "Get an image template",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Get an image template definition for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image template retrieval successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update an image template",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Update an image template definition for the container *container* and return the updated image template.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "overwrite": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "idf": {
+                    "$ref": "#/components/schemas/idf"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image template update successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "422": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete an image",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Delete an image template definition for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image template deletion successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/success"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "422": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/idfs": {
+      "get": {
+        "summary": "Retrieve all images",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Retrieve all image definitions for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieving images was successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/idf"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new image",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Create a new image defintion for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "overwrite": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "idf": {
+                    "$ref": "#/components/schemas/idf"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image creation successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/idts": {
+      "get": {
+        "summary": "Retrieve all image templates",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Retrieve all image templates for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieving image temnplate successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/idf"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new image template",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Create a new image template defintion for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "overwrite": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "idf": {
+                    "$ref": "#/components/schemas/idf"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Image template creation successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/import/{filename}": {
+      "post": {
+        "summary": "Import .zip, .cab, .udf, .cap and .bup files",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Import all content of .zip, .cab, .udf, .cap and .bup files named *filename* into the container *container*; existing files will not be overwritten.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/filename"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "zip": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/importZipSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "415": {
+            "$ref": "#/components/responses/textError"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/import/{imageName}.idf": {
+      "post": {
+        "summary": "Import an image file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Import the image file named *filename* into the container *container*; an existing file will not be overwritten.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imported IDF is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "409": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/import/{imageName}.idt": {
+      "post": {
+        "summary": "Import an image template file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Import the image template file named *imageName* into the container *container*; an existing file will not be overwritten.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imported IDT is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "409": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/import/{imageName}.jidf": {
+      "post": {
+        "summary": "Import an image file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Import the image file named *imageName* into the container *container*; an existing file will not be overwritten.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imported JIDF is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "409": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/import/force/{filename}": {
+      "post": {
+        "summary": "Import .zip, .cab, .udf, .cap and .bup files",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Import all content of .zip, .cab, .udf, .cap and .bup files named *filename* into the container *container*; existing files *will* be overwritten.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/filename"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "zip": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/importZipSuccess"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "415": {
+            "$ref": "#/components/responses/textError"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/import/force/{imageName}.idf": {
+      "post": {
+        "summary": "Import an image file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Import the image file named *filename* into the container *container*; an existing file *will* be overwritten.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imported IDF is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "409": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/import/force/{imageName}.idt": {
+      "post": {
+        "summary": "Import an image template file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Import the image template file named *imageName* into the container *container*; an existing file *will* be overwritten.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imported IDT is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "409": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/import/force/{imageName}.jidf": {
+      "post": {
+        "summary": "Import an image file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Import the image file named *imageName* into the container *container*; an existing file *will* be overwritten.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imported JIDF is returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "409": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/packagecontains": {
+      "post": {
+        "summary": "Check which packages contain a specific file",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Check which packages of the container *container* contain the file named *filename*. Regular expressions can be used for search.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "filename": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Package results.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "epm": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "filenames": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/textError"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/findconflicts": {
+      "post": {
+        "summary": "Find conflicts for an image",
+        "tags": [
+          "Solution Routes"
+        ],
+        "description": "Find conflicts for the specified packages of the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "parcels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The conflicts as a list of packages.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/hasconflicts": {
+      "post": {
+        "summary": "Is image conflicted",
+        "tags": [
+          "Solution Routes"
+        ],
+        "description": "Determine whether an image given as a list of packages has conflicts for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "parcels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result whether image is conflicted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/isselfcontained": {
+      "post": {
+        "summary": "Is image self contained",
+        "tags": [
+          "Solution Routes"
+        ],
+        "description": "Determine whether an image given as a list of packages is self contained for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "parcels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Result whether image is self contained.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/solve": {
+      "post": {
+        "summary": "Find an image solution",
+        "tags": [
+          "Solution Routes"
+        ],
+        "description": "Find a complete image for the specified packages of the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "parcels": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The solution as a list of packages.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/container.ini": {
+      "get": {
+        "summary": "Provide the container.ini file",
+        "tags": [
+          "eLux Routes"
+        ],
+        "description": "Provide the container.ini file for the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/userAgent"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The container.ini file.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/cert/{filename}": {
+      "get": {
+        "summary": "Get a certificate",
+        "tags": [
+          "Certificate Routes"
+        ],
+        "description": "Get a specific certificate named *filename* of the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/filename"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieve the certificate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/crt"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          }
+        }
+      },
+      "post": {
+        "summary": "Save a certificate",
+        "tags": [
+          "Certificate Routes"
+        ],
+        "description": "Save the certificate named *filename* of the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/filename"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "text/plain": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Certificate saved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/certificateSavedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "409": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "415": {
+            "$ref": "#/components/responses/textError"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/certs": {
+      "get": {
+        "summary": "Get all certificates",
+        "tags": [
+          "Certificate Routes"
+        ],
+        "description": "Get all certificates of the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Retrieve all certificates as an array.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/crt"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/sign": {
+      "get": {
+        "summary": "Get the signing certificate.",
+        "tags": [
+          "Certificate Routes"
+        ],
+        "description": "Get the signing certificate of the container *container* needed for signing image definition files.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The signing certificate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/crt"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "500": {
+            "$ref": "#/components/schemas/errorMsg"
+          }
+        }
+      },
+      "post": {
+        "summary": "Save a signing certificate",
+        "tags": [
+          "Certificate Routes"
+        ],
+        "description": "Save the certificate for signing of the container *container*; allowed files are .pfx, .pem, two .pem files with private and public key.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string"
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/importSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "422": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/sign/{imageName}.idf": {
+      "get": {
+        "summary": "Sign an image",
+        "tags": [
+          "Certificate Routes"
+        ],
+        "description": "Sign an image named *imageName* of the container *container* with the current certificate.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/signedIdf"
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "422": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/sign/{imageName}.idt": {
+      "get": {
+        "summary": "Sign an image template",
+        "tags": [
+          "Certificate Routes"
+        ],
+        "description": "Sign an image template named *imageName* of the container *container* with the current certificate.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/signedIdt"
+          },
+          "400": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "422": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/{imageName}.idf": {
+      "get": {
+        "summary": "Export an image as IDF file",
+        "tags": [
+          "eLux Routes"
+        ],
+        "description": "Export an image *imageName* of the container *container* as an IDF file.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/userAgent"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The IDF file.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/{filename}.sig": {
+      "get": {
+        "summary": "Export the signature for a file",
+        "tags": [
+          "eLux Routes"
+        ],
+        "description": "Export the signature for the file named *filename* of the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/filename"
+          },
+          {
+            "$ref": "#/components/parameters/userAgent"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The signature file.",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/textError"
+          },
+          "404": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/{filename}": {
+      "get": {
+        "summary": "Retrieve a file",
+        "tags": [
+          "eLux Routes"
+        ],
+        "description": "Retrieve the file named *filename* of the container *container*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/filename"
+          },
+          {
+            "$ref": "#/components/parameters/userAgent"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The requested file.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/textError"
+          }
+        }
+      }
+    },
+    "/{container}/lock/{imageName}.idf": {
+      "post": {
+        "summary": "Lock an image",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Lock an image named *imageName* of the container *container* in the current state.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/lockedIdf"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "415": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/lock/{imageName}.idt": {
+      "post": {
+        "summary": "Lock an image template",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Lock an image template named *imageName* of the container *container* in the current state.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/lockedIdt"
+          },
+          "401": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "403": {
+            "$ref": "#/components/responses/authenticationFailure"
+          },
+          "415": {
+            "$ref": "#/components/responses/errorMsg"
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "_id": {
+        "name": "_id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "authenticationToken": {
+        "name": "token",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "container": {
+        "name": "container",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "containerName": {
+        "name": "containerName",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "epm": {
+        "name": "epm",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "filename": {
+        "name": "filename",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "imageName": {
+        "name": "imageName",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "stickWizzDescription": {
+        "name": "stickWizzDescription",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "token": {
+        "name": "x-access-token",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "paramToken": {
+        "name": "paramToken",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "userAgent": {
+        "name": "User-Agent",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "uuid": {
+        "name": "uuid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    "responses": {
+      "authenticationFailure": {
+        "description": "Failed to authenticate.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/authenticationFailureResponse"
+            }
+          }
+        }
+      },
+      "containerList": {
+        "description": "Return new list of containers.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/containerResponse"
+            }
+          }
+        }
+      },
+      "errorMsg": {
+        "description": "Return an error message.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/errorMsg"
+            }
+          }
+        }
+      },
+      "authError": {
+        "description": "Return an error message when authentication fails.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/authError"
+            }
+          }
+        }
+      },
+      "importSuccess": {
+        "description": "Return information about the import.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/importReponse"
+            }
+          }
+        }
+      },
+      "importZipSuccess": {
+        "description": "Return information about the import.",
+        "headers": {
+          "UUID": {
+            "description": "UUID is set for checking the import status.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "content": {
+          "application/octet-stream": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      },
+      "messageId": {
+        "description": "Return a message object.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "msgId": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "signedIdf": {
+        "description": "Provide a response message for a signed image.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "msgId": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "idf": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          }
+        }
+      },
+      "signedIdt": {
+        "description": "Provide a response message for a signed image template.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "msgId": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "idt": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          }
+        }
+      },
+      "lockedIdf": {
+        "description": "Provide a response message for a locked image.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "msgId": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "idf": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          }
+        }
+      },
+      "lockedIdt": {
+        "description": "Provide a response message for a locked image.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "properties": {
+                "msgId": {
+                  "type": "string"
+                },
+                "message": {
+                  "type": "string"
+                },
+                "idf": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          }
+        }
+      },
+      "textError": {
+        "description": "Return an error message.",
+        "content": {
+          "text/html": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "zipFile": {
+        "description": "The zipped file.",
+        "content": {
+          "application/zip": {
+            "schema": {
+              "type": "string",
+              "format": "binary"
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "crt": {
+        "description": "All metadata for certificates.",
+        "properties": {
+          "validNotBefore": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "validNotAfter": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "version": {
+            "type": "number"
+          },
+          "serialNumber": {
+            "type": "string"
+          },
+          "issuedBy": {
+            "type": "object"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "pem": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "signAlgorithm": {
+            "type": "string"
+          },
+          "publicKey": {
+            "type": "string"
+          },
+          "privateKey": {
+            "type": "string"
+          },
+          "subjectKeyIdentifier": {
+            "type": "string"
+          },
+          "authorityKeyIdentifier": {
+            "type": "string"
+          },
+          "issuer": {
+            "type": "object",
+            "properties": {
+              "commonName": {
+                "type": "string"
+              },
+              "countryName": {
+                "type": "string"
+              },
+              "hash": {
+                "type": "string"
+              },
+              "localityName": {
+                "type": "string"
+              },
+              "organizationalUnitName": {
+                "type": "string"
+              },
+              "organizationName": {
+                "type": "string"
+              },
+              "stateOrProvinceName": {
+                "type": "string"
+              }
+            }
+          },
+          "subject": {
+            "type": "object",
+            "properties": {
+              "commonName": {
+                "type": "string"
+              },
+              "countryName": {
+                "type": "string"
+              },
+              "hash": {
+                "type": "string"
+              },
+              "localityName": {
+                "type": "string"
+              },
+              "organizationalUnitName": {
+                "type": "string"
+              },
+              "organizationName": {
+                "type": "string"
+              },
+              "stateOrProvinceName": {
+                "type": "string"
+              }
+            }
+          },
+          "extensions": {
+            "type": "object",
+            "properties": {
+              "authorityInfoAccess": {
+                "type": "boolean"
+              },
+              "authorityKeyIdentifier": {
+                "type": "boolean"
+              },
+              "cA": {
+                "type": "boolean"
+              },
+              "certificatePolicies": {
+                "type": "boolean"
+              },
+              "client": {
+                "type": "boolean"
+              },
+              "clientAuth": {
+                "type": "boolean"
+              },
+              "codeSigning": {
+                "type": "boolean"
+              },
+              "cRLDistributionPoints": {
+                "type": "boolean"
+              },
+              "cRLSign": {
+                "type": "boolean"
+              },
+              "dataEncipherment": {
+                "type": "boolean"
+              },
+              "decipherOnly": {
+                "type": "boolean"
+              },
+              "digitalSignature": {
+                "type": "boolean"
+              },
+              "email": {
+                "type": "boolean"
+              },
+              "emailCA": {
+                "type": "boolean"
+              },
+              "emailProtection": {
+                "type": "boolean"
+              },
+              "encipherOnly": {
+                "type": "boolean"
+              },
+              "keyAgreement": {
+                "type": "boolean"
+              },
+              "keyCertSign": {
+                "type": "boolean"
+              },
+              "keyWncipherment": {
+                "type": "boolean"
+              },
+              "nonRepudiation": {
+                "type": "boolean"
+              },
+              "objCA": {
+                "type": "boolean"
+              },
+              "objsign": {
+                "type": "boolean"
+              },
+              "reserved": {
+                "type": "boolean"
+              },
+              "server": {
+                "type": "boolean"
+              },
+              "serverAuth": {
+                "type": "boolean"
+              },
+              "sslCA": {
+                "type": "boolean"
+              },
+              "timeStamping": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "epm": {
+        "description": "All metadata of an EPM package.",
+        "required": [
+          "id",
+          "name",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "certificate": {
+            "type": "string"
+          },
+          "buildTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "signaturePEM": {
+            "type": "string"
+          },
+          "rpmDescription": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "copyright": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "packageSize": {
+            "type": "number"
+          },
+          "needsSubscription": {
+            "type": "boolean"
+          },
+          "minFileSize": {
+            "type": "number"
+          },
+          "maxFileSize": {
+            "type": "number"
+          },
+          "fpms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requireNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requireFlags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requireVersions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflictNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflictFlags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflictVersions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provideNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provideFlags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provideVersions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "release": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "fpm": {
+        "description": "All metadata for a FPM package.",
+        "required": [
+          "id",
+          "name",
+          "version"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "certificate": {
+            "type": "string"
+          },
+          "buildTime": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "copyright": {
+            "type": "string"
+          },
+          "signaturePEM": {
+            "type": "string"
+          },
+          "packageSize": {
+            "type": "number"
+          },
+          "numberOfFiles": {
+            "type": "number"
+          },
+          "isPreselected": {
+            "type": "boolean"
+          },
+          "isMandatory": {
+            "type": "boolean"
+          },
+          "forceUninstall": {
+            "type": "boolean"
+          },
+          "forceUpdate": {
+            "type": "boolean"
+          },
+          "partOfRecovery": {
+            "type": "boolean"
+          },
+          "restartDesktop": {
+            "type": "boolean"
+          },
+          "unseal": {
+            "type": "boolean"
+          },
+          "installOptions": {
+            "type": "number"
+          },
+          "requireNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requireFlags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requireVersions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflictNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflictFlags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "conflictVersions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provideNames": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provideFlags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provideVersions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "release": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "epm": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "idf": {
+        "description": "An IDF contains a number of EPMs and their selected FPMs",
+        "required": [
+          "id",
+          "name",
+          "version",
+          "container"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "container": {
+            "type": "string"
+          },
+          "copyright": {
+            "type": "string"
+          },
+          "certificate": {
+            "type": "string"
+          },
+          "conflicted": {
+            "type": "boolean"
+          },
+          "hasMissing": {
+            "type": "boolean"
+          },
+          "imageSize": {
+            "type": "number"
+          },
+          "isTemplate": {
+            "type": "boolean"
+          },
+          "selfContained": {
+            "type": "boolean"
+          },
+          "signaturePEM": {
+            "type": "string"
+          },
+          "legacySignaturePEM": {
+            "type": "string"
+          },
+          "legacyIDF": {
+            "type": "string"
+          },
+          "conflicts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "modified": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "packageList": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "epmGroups": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "epms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "copyright": {
+                  "type": "string"
+                },
+                "container": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "modified": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "created": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "available": {
+                  "type": "boolean"
+                },
+                "isUserSelected": {
+                  "type": "boolean"
+                },
+                "summary": {
+                  "type": "string"
+                },
+                "release": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "fpms": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "available": {
+                      "type": "boolean"
+                    },
+                    "selected": {
+                      "type": "boolean"
+                    },
+                    "summary": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "release": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "size": {
+                      "type": "number"
+                    },
+                    "isUserSelected": {
+                      "type": "boolean"
+                    },
+                    "isMandatory": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "about": {
+        "description": "Provide copyright and container information.",
+        "properties": {
+          "copyright": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "container": {
+            "type": "string"
+          }
+        }
+      },
+      "access": {
+        "description": "Access control properties.",
+        "properties": {
+          "keycloakRole": {
+            "type": "string"
+          },
+          "adUser": {
+            "type": "string"
+          },
+          "adGroup": {
+            "type": "string"
+          },
+          "adDomain": {
+            "type": "string"
+          },
+          "accessRole": {
+            "type": "string"
+          },
+          "userType": {
+            "type": "string"
+          },
+          "container": {
+            "type": "string"
+          },
+          "isGlobalAdmin": {
+            "type": "boolean"
+          }
+        }
+      },
+      "authentication": {
+        "description": "Authentication properties.",
+        "required": [
+          "user",
+          "domain",
+          "password"
+        ],
+        "properties": {
+          "user": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "authenticationFailureResponse": {
+        "description": "Failed to authenticate.",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "notVerified": {
+            "type": "boolean"
+          },
+          "msgId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "authenticationResponse": {
+        "description": "Authentication response after successful logon.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "loginName": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "loginDate": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "token": {
+            "type": "string"
+          },
+          "success": {
+            "type": "boolean"
+          }
+        }
+      },
+      "certificateSavedResponse": {
+        "description": "Provide a response message for a saved certificate.",
+        "properties": {
+          "msgId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "cert": {
+            "$ref": "#/components/schemas/crt"
+          }
+        }
+      },
+      "containerResponse": {
+        "description": "Provide a response message.",
+        "properties": {
+          "msgId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/containerSummary"
+            }
+          }
+        }
+      },
+      "containerSummary": {
+        "description": "Provide a summary for a container.",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "isBaseContainer": {
+            "type": "boolean"
+          }
+        }
+      },
+      "errorMsg": {
+        "description": "Provide an error message as object.",
+        "properties": {
+          "msgId": {
+            "type": "string"
+          },
+          "msgArgs": {
+            "type": "object"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "authError": {
+        "description": "Provide an error message when authentication fails.",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "default": false
+          },
+          "verifyToken": {
+            "type": "boolean"
+          },
+          "msgId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "importReponse": {
+        "description": "Provide an import success message.",
+        "properties": {
+          "msgId": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "success": {
+        "description": "Provide a success message.",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "verificationResponse": {
+        "description": "Contains the verification result and the decoded token in terms of success.",
+        "properties": {
+          "isVerifed": {
+            "type": "boolean"
+          },
+          "decoded": {
+            "type": "object"
+          }
+        }
+      }
+    }
+  }
+}

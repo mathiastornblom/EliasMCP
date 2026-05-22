@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "elias": {
+      "command": "node",
+      "args": ["/Users/mathiast/Documents/VSCode/EliasMCP/dist/index.js"]
+    }
+  }
+}
