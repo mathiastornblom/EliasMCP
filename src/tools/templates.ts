@@ -29,7 +29,7 @@ async function execute(raw: unknown): Promise<McpToolResult> {
   const n = encodeURIComponent(input.name);
 
   if (input.action === 'get') {
-    const data = await client.request<unknown[] | unknown>('GET', `/${c}/idt/${n}`);
+    const data = await client.request<unknown[] | unknown>('GET', `/${c}/idt/${n}.idt`);
     if (Array.isArray(data)) {
       if (data.length === 0) return fail(`Template '${input.name}' not found in container '${input.container}'.`);
       return ok(data[0]);
@@ -48,7 +48,7 @@ async function execute(raw: unknown): Promise<McpToolResult> {
 
   if (input.action === 'update') {
     if (!input.idf) return fail('action=update requires idf.');
-    const data = await client.request('PUT', `/${c}/idt/${n}`, {
+    const data = await client.request('PUT', `/${c}/idt/${n}.idt`, {
       overwrite: input.overwrite ?? false,
       idf: input.idf,
     });
@@ -56,7 +56,7 @@ async function execute(raw: unknown): Promise<McpToolResult> {
   }
 
   if (input.action === 'delete') {
-    const data = await client.request('DELETE', `/${c}/idt/${n}`);
+    const data = await client.request('DELETE', `/${c}/idt/${n}.idt`);
     return ok(data);
   }
 
