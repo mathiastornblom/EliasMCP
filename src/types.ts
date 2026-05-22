@@ -28,8 +28,9 @@ export interface McpToolResult {
 }
 
 export function ok(data: unknown): McpToolResult {
+  const text = data === undefined || data === null ? 'OK' : JSON.stringify(data, null, 2);
   return {
-    content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
+    content: [{ type: 'text', text }],
   };
 }
 
