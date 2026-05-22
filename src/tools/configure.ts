@@ -136,7 +136,7 @@ export const configureTool = {
   description:
     'Configure ELIAS server credentials at runtime — no static config files needed. ' +
     'Use action=set with baseUrl, username, and password to connect. ' +
-    'Pass save=true to persist to ~/.elias-mcp.json for future sessions. ' +
+    'IMPORTANT: Before calling action=set, always ask the user: "Do you want to save the credentials to ~/.elias-mcp.json so they are available in future sessions?" — then set save=true or save=false based on the answer. ' +
     'Use action=status to inspect current config, action=clear to remove credentials.',
   inputSchema: zodToJsonSchema(inputSchema),
   execute,
