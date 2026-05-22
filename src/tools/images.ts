@@ -98,8 +98,13 @@ async function resolveAndSave(
   for (const [k, v] of Object.entries(idfBase)) {
     if (!SERVER_FIELDS.has(k)) clean[k] = v;
   }
+  const imageSize = epms.reduce(
+    (total, epm) => total + epm.fpms.reduce((s, fpm) => s + (fpm.selected ? (fpm.size ?? 0) : 0), 0),
+    0,
+  );
+
   // selfContained: true tells ELIAS to compute legacyIDF — ELIAS trusts the client's assertion.
-  const finalIdf = { ...clean, version: '3.0', container: platformVersion, packageList: [], epms, selfContained: true };
+  const finalIdf = { ...clean, version: '3.0', container: platformVersion, packageList: [], epms, selfContained: true, imageSize };
 
   const saved = await client.request('PUT', `/${c}/idf/${n}.idf`, { overwrite, idf: finalIdf });
   return ok(saved);
