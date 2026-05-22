@@ -39,15 +39,25 @@ Arkitekten ger dig uppgifter. Du implementerar, commitar och rapporterar status.
 ## URL-regler
 
 ```
-/api/authenticate        → autentisering
-/api/containers          → container-lista
-/api/container/{name}    → container CRUD
-/{container}/idfs        → bilder (UTAN /api)
-/{container}/epms        → paket (UTAN /api)
+/api/authenticate           → autentisering
+/api/containers             → container-lista
+/api/container/{name}       → container CRUD
+/api/{container}/idfs       → bilder (MED /api)
+/api/{container}/epms       → paket (MED /api)
+/api/{container}/about      → about (MED /api)
+/api/accessControls         → access control (MED /api)
+
+Utan /api (eLux-routes, filserving för tunna klienter):
+/{container}/container.ini
+/{container}/{imageName}.idf
+/{container}/{filename}.sig
+/{container}/{filename}
 ```
 
-Tumregel: Routes med `{container}` som första path-segment saknar `/api`-prefix.
-Undantag: `/api/accessControl` och `/api/accessControls` (har /api trots global scope).
+Tumregel: ALLA API-routes har `/api`-prefix. Undantaget är "eLux Routes" (taggade i openapi.json som "eLux Routes") — de är till för tunna klienter och implementeras inte som MCP-verktyg.
+
+`EliasClient.request()` lägger alltid på `/api`-prefix.
+`EliasClient.requestElux()` (om eLux behövs) lägger inte på prefix.
 
 ## Byggnadsordning
 
