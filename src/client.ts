@@ -152,7 +152,21 @@ export class EliasClient {
 
     if (res.status === 204) return undefined as T;
 
-    return res.json() as Promise<T>;
+    const json = (await res.json()) as T;
+
+    // ELIAS returns HTTP 200 with { isVerified: false, msgId: "tokenFailed" } on token expiry
+    if (
+      !isRetry &&
+      json !== null &&
+      typeof json === 'object' &&
+      (json as Record<string, unknown>)['msgId'] === 'tokenFailed'
+    ) {
+      this.token = null;
+      await this.login();
+      return this.doRequest<T>(method, path, body, true);
+    }
+
+    return json;
   }
 
   private async doRequestText(
