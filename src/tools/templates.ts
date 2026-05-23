@@ -113,7 +113,13 @@ async function execute(raw: unknown): Promise<McpToolResult> {
 
   if (input.action === 'create') {
     if (!input.idf) return fail('action=create requires idf.');
-    return saveTemplate(client, 'POST', `/${c}/idts`, input.overwrite ?? false, input.idf, c);
+    // POST creates the IDT record; PUT then writes all fields (isTemplate, selfContained, etc.)
+    // because the /idts POST endpoint does not persist those extra fields — mirrors images.ts pattern.
+    await client.request('POST', `/${c}/idts`, {
+      overwrite: input.overwrite ?? false,
+      idf: input.idf,
+    });
+    return saveTemplate(client, 'PUT', `/${c}/idt/${n}.idt`, true, input.idf, c);
   }
 
   if (input.action === 'update') {
