@@ -1,16 +1,17 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { type McpToolResult, ok, fail, ContainerName, ImageName } from '../types.js';
+import { type McpToolResult, ok, fail, ContainerName, ImageName, buildQuery } from '../types.js';
 import { getClient, type EliasClient } from '../client.js';
 
 const inputSchema = z.object({
   action: z
-    .enum(['list', 'get', 'create', 'update', 'delete', 'sign', 'lock'])
-    .describe('CRUD operations on IDF images, plus sign and lock'),
+    .enum(['list', 'get', 'create', 'update', 'delete', 'sign', 'lock', 'setdescription'])
+    .describe('CRUD operations on IDF images, plus sign, lock, and setdescription'),
   container: ContainerName.describe('Container name'),
-  name: ImageName.optional().describe('Image name without extension (required for get/create/update/delete/sign/lock)'),
+  name: ImageName.optional().describe('Image name without extension (required for get/create/update/delete/sign/lock/setdescription)'),
   idf: z.record(z.unknown()).optional().describe('IDF definition object (required for create/update)'),
   overwrite: z.boolean().optional().describe('Overwrite existing image (default: false)'),
+  description: z.string().max(64).optional().describe('Image description, max 64 chars, no newlines (required for setdescription)'),
 });
 
 type Input = z.infer<typeof inputSchema>;
@@ -54,12 +55,14 @@ async function resolveAndSave(
     ? (idfBase.packageList as string[])
     : [];
 
-  const [solved, allEpms, allFpms, about] = await Promise.all([
+  const [solved, allEpmsRaw, allFpmsRaw, about] = await Promise.all([
     client.request<string[]>('POST', `/${c}/solve`, { parcels: packageList }),
     client.request<EpmPackage[]>('GET', `/${c}/epms`),
     client.request<FpmPackage[]>('GET', `/${c}/fpms`),
     client.request<{ container?: string }>('GET', `/${c}/about`),
   ]);
+  const allEpms = allEpmsRaw ?? [];
+  const allFpms = allFpmsRaw ?? [];
   const solvedSet = new Set(solved);
   const fpmMap = new Map(allFpms.map(f => [f.id, f]));
 
@@ -162,6 +165,13 @@ async function execute(raw: unknown): Promise<McpToolResult> {
     return ok(data);
   }
 
+  if (input.action === 'setdescription') {
+    if (!input.description) return fail('action=setdescription requires description.');
+    const qs = buildQuery({ newDescription: input.description });
+    const data = await client.request('PUT', `/${c}/idfdescription/${n}.idf${qs}`);
+    return ok(data);
+  }
+
   return fail('Unknown action');
 }
 
@@ -175,7 +185,8 @@ export const imagesTool = {
     'action=update updates an existing image (requires idf object) — automatically solves dependencies so the image is self-contained. ' +
     'action=delete deletes an image. ' +
     'action=sign signs an image with the container certificate. ' +
-    'action=lock locks an image in its current state.',
+    'action=lock locks an image in its current state. ' +
+    'action=setdescription sets a short description on the image (requires description, max 64 chars).',
   inputSchema: zodToJsonSchema(inputSchema),
   execute,
 };

@@ -2,12 +2,12 @@
   "openapi": "3.0.0",
   "info": {
     "title": "ELIAS 18 API",
-    "version": "18.2209.0",
+    "version": "18.2603.1",
     "description": "For all routes except for the eLux routes, *api* needs to be included in the path."
   },
   "externalDocs": {
-    "description": "See also ELIAS 18 uDocs Documentation",
-    "url": "https://www.unicon-software.com/udocs"
+    "description": "See also ELIAS 18 Documentation",
+    "url": "https://docs.citrix.com/en-us/unicon-elux-scout"
   },
   "servers": [
     {
@@ -2602,6 +2602,82 @@
           }
         }
       }
+    },
+    "/{container}/idfdescription/{imageName}.idf\"": {
+      "put": {
+        "summary": "Set an image description",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Set an image description for the Image *Image*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          },
+          {
+            "$ref": "#/components/parameters/newDescription"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image description set successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
+    },
+    "/{container}/idtdescription/{imageName}.idf\"": {
+      "put": {
+        "summary": "Set an image templage description",
+        "tags": [
+          "Container Routes"
+        ],
+        "description": "Set an image template description for the Image tempate *Image tempate*.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/container"
+          },
+          {
+            "$ref": "#/components/parameters/imageName"
+          },
+          {
+            "$ref": "#/components/parameters/token"
+          },
+          {
+            "$ref": "#/components/parameters/newDescription"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Image tempate description set successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/idf"
+                }
+              }
+            }
+          },
+          "500": {
+            "$ref": "#/components/responses/errorMsg"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2701,6 +2777,15 @@
         "schema": {
           "type": "string"
         }
+      },
+      "newDescription": {
+        "name": "newDescription",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Enter the description for image (max. 64 chars) without new line."
       }
     },
     "responses": {

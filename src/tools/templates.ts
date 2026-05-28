@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { type McpToolResult, ok, fail, ContainerName, ImageName } from '../types.js';
+import { type McpToolResult, ok, fail, ContainerName, ImageName, buildQuery } from '../types.js';
 import { getClient, type EliasClient } from '../client.js';
 
 const inputSchema = z.object({
   action: z
-    .enum(['list', 'get', 'create', 'update', 'delete', 'sign', 'lock'])
-    .describe('CRUD operations on IDT image templates, plus sign and lock'),
+    .enum(['list', 'get', 'create', 'update', 'delete', 'sign', 'lock', 'setdescription'])
+    .describe('CRUD operations on IDT image templates, plus sign, lock, and setdescription'),
   container: ContainerName.describe('Container name'),
-  name: ImageName.optional().describe('Template name without extension (required for get/create/update/delete/sign/lock)'),
+  name: ImageName.optional().describe('Template name without extension (required for get/create/update/delete/sign/lock/setdescription)'),
   idf: z.record(z.unknown()).optional().describe(
     'IDT definition object (required for create/update). ' +
     'epmGroups accepts either group names (e.g. "baseos") for flexible version selection, ' +
@@ -16,6 +16,7 @@ const inputSchema = z.object({
     'fpmGroups lists optional FPM names to include.',
   ),
   overwrite: z.boolean().optional().describe('Overwrite existing template (default: false)'),
+  description: z.string().max(64).optional().describe('Template description, max 64 chars, no newlines (required for setdescription)'),
 });
 
 type Input = z.infer<typeof inputSchema>;
@@ -31,7 +32,7 @@ async function findMultiVersionGroups(
   c: string,
   requestedGroups: string[],
 ): Promise<Record<string, string[]>> {
-  const allEpms = await client.request<EpmInfo[]>('GET', `/${c}/epms`);
+  const allEpms = (await client.request<EpmInfo[]>('GET', `/${c}/epms`)) ?? [];
 
   const byName: Record<string, string[]> = {};
   for (const epm of allEpms) {
@@ -142,6 +143,13 @@ async function execute(raw: unknown): Promise<McpToolResult> {
     return ok(data);
   }
 
+  if (input.action === 'setdescription') {
+    if (!input.description) return fail('action=setdescription requires description.');
+    const qs = buildQuery({ newDescription: input.description });
+    const data = await client.request('PUT', `/${c}/idtdescription/${n}.idf${qs}`);
+    return ok(data);
+  }
+
   return fail('Unknown action');
 }
 
@@ -156,6 +164,7 @@ export const templatesTool = {
     'action=delete deletes a template. ' +
     'action=sign signs a template with the container certificate. ' +
     'action=lock locks a template in its current state. ' +
+    'action=setdescription sets a short description on the template (requires description, max 64 chars). ' +
     'IMPORTANT: epmGroups accepts group names ("baseos") for flexible/latest-version selection, ' +
     'or exact EPM IDs ("baseos-7.2509.0-4.UC_ELUX7-1.0.epm") to pin a version. ' +
     'create/update will report which groups have multiple versions available so you can ask the user whether to pin.',

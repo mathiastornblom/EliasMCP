@@ -5,7 +5,7 @@
 ## Testmiljö
 
 ```
-ELIAS_BASE_URL=https://scoutsrv.tornbloms.net:443/elias/api
+ELIAS_BASE_URL=https://elias.example.com:22130/api
 ELIAS_USERNAME=admin
 ELIAS_IGNORE_TLS=true
 ELIAS_TEST_CONTAINER=mcp-test

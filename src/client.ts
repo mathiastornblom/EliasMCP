@@ -18,6 +18,15 @@ export class EliasError extends Error {
   }
 }
 
+// ELIAS 18.2603+ redirects all paths to trailing-slash form (301).
+// Inserting the slash proactively avoids redirect-induced POST→GET conversion.
+function withTrailingSlash(path: string): string {
+  const qi = path.indexOf('?');
+  if (qi === -1) return path.endsWith('/') ? path : path + '/';
+  const base = path.slice(0, qi);
+  return (base.endsWith('/') ? base : base + '/') + path.slice(qi);
+}
+
 export class EliasClient {
   private readonly baseUrl: string;
   private readonly timeoutMs: number;
@@ -46,7 +55,7 @@ export class EliasClient {
   }
 
   async login(): Promise<void> {
-    const url = `${this.baseUrl}/authenticate`;
+    const url = `${this.baseUrl}/authenticate/`;
     const res = await this.fetchWithTimeout(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -121,7 +130,7 @@ export class EliasClient {
     body: unknown,
     isRetry: boolean,
   ): Promise<T> {
-    const url = `${this.baseUrl}${path}`;
+    const url = `${this.baseUrl}${withTrailingSlash(path)}`;
     const headers: Record<string, string> = { ...this.authHeaders() };
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json';
@@ -175,7 +184,7 @@ export class EliasClient {
     body: unknown,
     isRetry: boolean,
   ): Promise<string> {
-    const url = `${this.baseUrl}${path}`;
+    const url = `${this.baseUrl}${withTrailingSlash(path)}`;
     const headers: Record<string, string> = {
       ...this.authHeaders(),
       Accept: 'text/plain, application/json',
@@ -213,7 +222,7 @@ export class EliasClient {
     path: string,
     isRetry: boolean,
   ): Promise<{ data: Buffer; contentType: string }> {
-    const url = `${this.baseUrl}${path}`;
+    const url = `${this.baseUrl}${withTrailingSlash(path)}`;
     const headers: Record<string, string> = {
       ...this.authHeaders(),
       Accept: '*/*',
@@ -249,7 +258,7 @@ export class EliasClient {
     formData: FormData,
     isRetry: boolean,
   ): Promise<{ headers: Record<string, string>; body: unknown }> {
-    const url = `${this.baseUrl}${path}`;
+    const url = `${this.baseUrl}${withTrailingSlash(path)}`;
     const headers: Record<string, string> = {
       'x-access-token': this.token ?? '',
     };
