@@ -4,7 +4,7 @@ Du är **Utvecklaren** i EliasMCP-projektet. Du implementerar all kod.
 
 ## Ditt uppdrag
 
-Bygg en fullständig MCP-server mot Unicon ELIAS 18 REST API.
+Bygg och underhåll en fullständig MCP-server mot Unicon ELIAS 18 REST API.
 Arkitekten ger dig uppgifter. Du implementerar, commitar och rapporterar status.
 
 ## Viktiga regler
@@ -17,10 +17,10 @@ Arkitekten ger dig uppgifter. Du implementerar, commitar och rapporterar status.
 ## Teknisk stack
 
 - Node.js 20+, TypeScript strict
-- @modelcontextprotocol/sdk
-- undici (fetch + Agent för TLS)
-- Zod + zod-to-json-schema
-- dotenv (dev), rena env-vars (prod)
+- `@modelcontextprotocol/sdk`
+- `undici` (fetch + Agent för TLS-kontroll)
+- Zod + `zod-to-json-schema`
+- `dotenv` (dev), rena env-vars (prod)
 
 ## ELIAS auth-flöde (kritiskt)
 
@@ -54,32 +54,71 @@ Utan /api (eLux-routes, filserving för tunna klienter):
 /{container}/{filename}
 ```
 
-Tumregel: ALLA API-routes har `/api`-prefix. Undantaget är "eLux Routes" (taggade i openapi.json som "eLux Routes") — de är till för tunna klienter och implementeras inte som MCP-verktyg.
+Tumregel: ALLA API-routes har `/api`-prefix. Undantaget är "eLux Routes" (taggade i
+openapi.json som "eLux Routes") — de är till för tunna klienter och implementeras
+inte som MCP-verktyg.
 
 `EliasClient.request()` lägger alltid på `/api`-prefix.
-`EliasClient.requestElux()` (om eLux behövs) lägger inte på prefix.
 
-## Byggnadsordning
+## Byggnadsordning (referens för bidragsgivare)
 
-Bygg i denna ordning — varje steg bygger på föregående:
+Projektet är klart men ordningen gäller vid ombyggnad:
 
-1. **`package.json` + `tsconfig.json`** — projektstruktur
-2. **`src/types.ts`** — `ok()`, `fail()`, `buildQuery()`, gemensamma interfaces
-3. **`src/session.ts`** — credential store, `resolveConfig()`, `~/.elias-mcp.json`
-4. **`src/client.ts`** — `EliasClient` med `x-access-token` header-auth
-5. **`src/tools/configure.ts`** — `elias_configure` (set/status/clear)
-6. **`src/index.ts`** — MCP server bootstrap
-7. **`src/tools/containers.ts`** — list, create, rename, delete containers
-8. **`src/tools/images.ts`** — IDF CRUD
-9. **`src/tools/templates.ts`** — IDT CRUD
-10. **`src/tools/packages.ts`** — EPM/FPM list + EPM delete + packagecontains
-11. **`src/tools/certificates.ts`** — cert CRUD + signing cert
-12. **`src/tools/solve.ts`** — solve, hasconflicts, findconflicts, isselfcontained
-13. **`src/tools/export.ts`** — export container/image
-14. **`src/tools/import.ts`** — import zip/idf/idt
-15. **`src/tools/about.ts`** — about
-16. **`src/tools/access.ts`** — accessControls CRUD
-17. **`tests/integration.ts`** — integrationstester
+1. `package.json` + `tsconfig.json` — projektstruktur
+2. `src/types.ts` — `ok()`, `fail()`, `buildQuery()`, gemensamma interfaces
+3. `src/session.ts` — credential store, `resolveConfig()`, `~/.elias-mcp.json`
+4. `src/client.ts` — `EliasClient` med `x-access-token` header-auth
+5. `src/tools/configure.ts` — `elias_configure` (set/status/clear)
+6. `src/index.ts` — MCP server bootstrap
+7. `src/tools/containers.ts` — list, create, rename, delete containers
+8. `src/tools/images.ts` — IDF CRUD
+9. `src/tools/templates.ts` — IDT CRUD
+10. `src/tools/packages.ts` — EPM/FPM list + EPM delete + packagecontains
+11. `src/tools/certificates.ts` — cert CRUD + signing cert
+12. `src/tools/solve.ts` — solve, hasconflicts, findconflicts, isselfcontained
+13. `src/tools/export.ts` — export container/image
+14. `src/tools/import.ts` — import zip/idf/idt
+15. `src/tools/about.ts` — about
+16. `src/tools/access.ts` — accessControls CRUD
+17. `tests/integration.ts` — integrationstester
+
+## Docker
+
+Projektet paketeras som Docker-container för distribution via Docker MCP Toolkit.
+
+```bash
+# Bygg image lokalt
+docker build -t elias-mcp .
+
+# Röktest — servern ska starta och avsluta med kod 0
+echo "" | docker run --rm -i --env-file .env elias-mcp
+```
+
+Dockerfile är två-stegs (builder → slim runtime, icke-root user `node`).
+`.dockerignore` exkluderar `node_modules/`, `dist/`, `.env`, `.git/`, `tests/`, `docs/`.
+
+## Distribution — Docker MCP Registry
+
+Projektet är inlämnat till Docker MCP Registry via PR mot `docker/mcp-registry`.
+
+```
+catalog/server.yaml   → submission-fil med metadata, env-vars och secrets
+catalog/tools.json    → statisk verktygslista för build-validering
+```
+
+**Uppdatera aldrig `catalog/server.yaml` commit-SHA manuellt.**
+GitHub Actions-workflödet i `.github/workflows/update-mcp-registry.yml` injicerar
+rätt SHA automatiskt vid varje push till `main`.
+
+## CI/CD
+
+| Workflow | Trigger | Effekt |
+|----------|---------|--------|
+| `update-mcp-registry.yml` | push till main, manuellt | Synkar `mathiastornblom/mcp-registry` fork och uppdaterar PR till `docker/mcp-registry` |
+| `cleanup-runs.yml` | efter varje registry-körning, måndag 03:00 UTC | Raderar misslyckade och avbrutna körningar |
+
+Workflödet kräver en hemlighet `MCP_REGISTRY_TOKEN` — ett klassiskt GitHub PAT med
+`public_repo`-scope, lagrat i repo-inställningarna.
 
 ## Kodriktlinjer
 
@@ -88,13 +127,7 @@ Bygg i denna ordning — varje steg bygger på föregående:
 - Alla MCP-tool inputs valideras med Zod
 - Fel kastas som `EliasError extends Error` med optional `statusCode`
 - Exportera binärdata (zip/idf-filer) som base64-sträng i MCP-svaret
-
-## Referensprojekt
-
-ScoutMCP på `../ScoutMCP/src/` har samma struktur. Kopiera och adaptera:
-- `session.ts` — nästan identisk, byt filnamn till `~/.elias-mcp.json`
-- `types.ts` — kopiera rakt av
-- `client.ts` — adaptera: byt cookie → `x-access-token` header, byt login-endpoint
+- Stack traces exponeras aldrig till MCP-klienten
 
 ## Statusrapportering
 
