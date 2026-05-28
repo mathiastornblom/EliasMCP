@@ -14,7 +14,7 @@ about:
   icon: https://avatars.githubusercontent.com/u/15749388?v=4
 source:
   project: https://github.com/mathiastornblom/EliasMCP
-  commit: f1ce4e214770b6d4412931f47c96c590c7cacb71
+  commit: 818b7d1b9d4f97664d1931a57c8ad2b38f08c935
 config:
   description: >
     Connect to your ELIAS server by providing its base URL and admin credentials.
