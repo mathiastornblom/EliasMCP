@@ -23,8 +23,8 @@ Läs `.agents/design-decisions.md` och granska:
    - Re-auth vid 401, max ett retry
 
 3. **TLS**
-   - HTTPS krävs för ELIAS_BASE_URL (om inte `ELIAS_IGNORE_TLS=true`)
-   - `ELIAS_IGNORE_TLS=true` varnar i logg men blockerar inte
+   - HTTPS krävs för `ELIAS_BASE_URL`
+   - `ELIAS_IGNORE_TLS=true` möjliggör självsignerade certifikat — varnas i logg
    - Undici Agent med `rejectUnauthorized: false` används bara när explicit konfigurerat
 
 4. **Input-validering**
@@ -52,7 +52,14 @@ Granska varje fil i `src/` med fokus på:
 - [ ] `tools/export.ts` — binary data hanteras säkert
 - [ ] `index.ts` — inga credentials i felmeddelanden
 
-### Fas 3 — Final review (innan merge)
+### Fas 3 — Docker och CI/CD granskning
+
+- [ ] `Dockerfile` — icke-root user (`node`), inga credentials i lager
+- [ ] `.dockerignore` — `.env` och `node_modules/` exkluderas
+- [ ] `.github/workflows/update-mcp-registry.yml` — `MCP_REGISTRY_TOKEN` hanteras som hemlighet, loggas aldrig
+- [ ] `catalog/server.yaml` — inga riktiga credentials eller interna URL:er
+
+### Fas 4 — Final review (innan merge)
 
 Kör igenom hela listan igen efter QA-godkännande.
 Skriv "SECURITY: FINAL APPROVED" i `.agents/security-review.md`.
@@ -66,6 +73,7 @@ Skriv "SECURITY: BLOCKED" i `.agents/security-review.md` och ange exakt vad som 
 - HTTPS-kravet kan kringgås utan explicit konfiguration
 - Path traversal är möjlig via tool-inputs
 - Destruktiva operationer saknar bekräftelsemekanism
+- Docker-imagen innehåller credentials i lager
 
 ## Granskningsutfall
 
@@ -74,7 +82,7 @@ Skriv ditt utfall i `.agents/security-review.md`:
 ```markdown
 # Security Review — {datum}
 
-## Fas: Design | Kod | Final
+## Fas: Design | Kod | Docker/CI | Final
 
 ## Status: SECURITY: APPROVED | SECURITY: BLOCKED | SECURITY: FINAL APPROVED
 
