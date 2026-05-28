@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,45 +22,55 @@ jobs:
           COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
           SHORT_SHA="${COMMIT_SHA:0:7}"
+
           git clone "https://x-access-token:${GH_TOKEN}@github.com/mathiastornblom/mcp-registry.git" /tmp/mcp-registry
           cd /tmp/mcp-registry
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
           git remote add upstream https://github.com/docker/mcp-registry.git
           git fetch upstream
           git checkout main
           git reset --hard upstream/main
           git push origin main --force
+
           git checkout -B update-elias-mcp-server
+
           mkdir -p servers/elias-mcp-server
           cp "$GITHUB_WORKSPACE/catalog/server.yaml" servers/elias-mcp-server/
-          cp "$GITHUB_WORKSPACE/catalog/tools.json"  servers/elias-mcp-server/
+          cp "$GITHUB_WORKSPACE/catalog/tools.json" servers/elias-mcp-server/
           sed -i "s/  commit: .*/  commit: ${COMMIT_SHA}/" servers/elias-mcp-server/server.yaml
+
           git add servers/elias-mcp-server/
+
           if git diff --staged --quiet; then
-            echo "No changes — skipping."
+            echo "Registry entry unchanged — nothing to do."
             exit 0
           fi
+
           git commit -m "Update elias-mcp-server to ${SHORT_SHA}: ${COMMIT_MSG}"
           git push origin update-elias-mcp-server --force
-          EXISTING_PR=$(gh pr list \
+
+          {
+            echo "Automated update from [EliasMCP@\`${SHORT_SHA}\`](https://github.com/mathiastornblom/EliasMCP/commit/${COMMIT_SHA})."
+            echo ""
+            echo "**Commit:** ${COMMIT_MSG}"
+            echo ""
+            echo "---"
+            echo "*Opened automatically by the [update-mcp-registry workflow](https://github.com/mathiastornblom/EliasMCP/actions/workflows/update-mcp-registry.yml).*"
+          } > /tmp/pr-body.md
+
+          # Create PR — if one already exists the branch update above is sufficient
+          CREATE_OUT=$(gh pr create \
             --repo docker/mcp-registry \
             --head "mathiastornblom:update-elias-mcp-server" \
-            --json number \
-            --jq '.[0].number' 2>/dev/null || true)
-          if [ -n "$EXISTING_PR" ]; then
-            echo "PR #${EXISTING_PR} already open — updated via force push."
-          else
-            PR_BODY="Automated update from \`${SHORT_SHA}\` (https://github.com/mathiastornblom/EliasMCP/commit/${COMMIT_SHA}).
-
-          **Commit:** ${COMMIT_MSG}
-
-          ---
-          *Opened automatically by the [update-mcp-registry workflow](https://github.com/mathiastornblom/EliasMCP/actions/workflows/update-mcp-registry.yml).*"
-            gh pr create \
-              --repo docker/mcp-registry \
-              --head "mathiastornblom:update-elias-mcp-server" \
-              --base main \
-              --title "Update ELIAS MCP Server to ${SHORT_SHA}" \
-              --body "${PR_BODY}"
-          fi
+            --base main \
+            --title "Update ELIAS MCP Server to ${SHORT_SHA}" \
+            --body-file /tmp/pr-body.md 2>&1) && echo "$CREATE_OUT" || {
+            if echo "$CREATE_OUT" | grep -q "already exists"; then
+              echo "PR already open — branch updated via force push."
+            else
+              echo "$CREATE_OUT" && exit 1
+            fi
+          }
