@@ -47,8 +47,10 @@ jobs:
             --repo docker/mcp-registry \
             --head "mathiastornblom:update-elias-mcp-server" \
             --json number \
-            --jq '.[0].number' 2>/dev/null)
-          if [ -z "$EXISTING_PR" ]; then
+            --jq '.[0].number' 2>/dev/null || true)
+          if [ -n "$EXISTING_PR" ]; then
+            echo "PR #${EXISTING_PR} already open — updated via force push."
+          else
             gh pr create \
               --repo docker/mcp-registry \
               --head "mathiastornblom:update-elias-mcp-server" \
@@ -56,10 +58,8 @@ jobs:
               --title "Update ELIAS MCP Server to ${SHORT_SHA}" \
               --body "Automated update from [\`${SHORT_SHA}\`](https://github.com/mathiastornblom/EliasMCP/commit/${COMMIT_SHA}).
 
-          **Commit:** ${COMMIT_MSG}
+**Commit:** ${COMMIT_MSG}
 
-          ---
-          *Opened automatically by the [update-mcp-registry workflow](https://github.com/mathiastornblom/EliasMCP/actions/workflows/update-mcp-registry.yml).*"
-          else
-            echo "PR #${EXISTING_PR} already open — updated via force push."
+---
+*Opened automatically by the [update-mcp-registry workflow](https://github.com/mathiastornblom/EliasMCP/actions/workflows/update-mcp-registry.yml).*"
           fi
