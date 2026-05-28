@@ -68,6 +68,7 @@ async function saveTemplate(
     conflicted: false,
     hasMissing: false,
     ...idfInput,
+    id: (idfInput.id as string | undefined) ?? `${url.split('/').pop()}`,
   };
 
   const requestedGroups = Array.isArray((idf as Record<string, unknown>).epmGroups)
@@ -114,13 +115,19 @@ async function execute(raw: unknown): Promise<McpToolResult> {
 
   if (input.action === 'create') {
     if (!input.idf) return fail('action=create requires idf.');
-    // POST creates the IDT record; PUT then writes all fields (isTemplate, selfContained, etc.)
-    // because the /idts POST endpoint does not persist those extra fields — mirrors images.ts pattern.
+    // ELIAS validates id/version/container even on the initial POST, so fetch about first.
+    const aboutData = await client.request<{ container?: string }>('GET', `/${c}/about`);
+    const augmented: Record<string, unknown> = {
+      id: `${input.name}.idt`,
+      version: '3.0',
+      container: aboutData?.container,
+      ...input.idf,
+    };
     await client.request('POST', `/${c}/idts`, {
       overwrite: input.overwrite ?? false,
-      idf: input.idf,
+      idf: augmented,
     });
-    return saveTemplate(client, 'PUT', `/${c}/idt/${n}.idt`, true, input.idf, c);
+    return saveTemplate(client, 'PUT', `/${c}/idt/${n}.idt`, true, augmented, c);
   }
 
   if (input.action === 'update') {
