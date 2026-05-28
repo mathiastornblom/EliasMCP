@@ -1,26 +1,102 @@
-# EliasMCP — MCP Server for Unicon ELIAS 18
+# Citrix Unicon Management ELIAS
 
-An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that exposes the Unicon ELIAS 18 REST API as tools for AI agents and Claude Desktop.
+An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that exposes the Unicon ELIAS 18 REST API as tools for AI assistants and Claude Desktop.
 
-ELIAS (eLux Image and Application Server) is Unicon's OS image server for thin clients.
+ELIAS (eLux Image and Application Server) is Unicon's OS image management platform for thin clients. Manage containers, image definitions, templates, packages, certificates, and access controls — all through natural language.
 
-## Prerequisites
+---
 
-- Node.js 20 or later
-- An ELIAS 18 server (default port: 22130)
+## Install via Docker MCP Toolkit (recommended)
 
-## Installation
+If you have [Docker Desktop](https://www.docker.com/products/docker-desktop/) with the MCP Toolkit enabled, find **Citrix Unicon Management ELIAS** in the catalog at [hub.docker.com/mcp](https://hub.docker.com/mcp) and click **Add**. Configure your ELIAS server URL, username, and password in the UI — no CLI needed.
+
+---
+
+## Manual installation
+
+### Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) — or Node.js 20+ for source installs
+
+### Option A — Docker (recommended)
 
 ```bash
+# Pull and run
+docker pull mcp/elias-mcp-server
+echo "" | docker run --rm -i \
+  -e ELIAS_BASE_URL=https://elias.example.com:22130/api \
+  -e ELIAS_USERNAME=admin \
+  -e ELIAS_PASSWORD=secret \
+  mcp/elias-mcp-server
+```
+
+Add to your MCP client config (Claude Desktop, Claude Code, etc.):
+
+```json
+{
+  "mcpServers": {
+    "elias": {
+      "command": "docker",
+      "args": [
+        "run", "--rm", "-i",
+        "--env-file", "/path/to/.env",
+        "mcp/elias-mcp-server"
+      ]
+    }
+  }
+}
+```
+
+### Option B — From source
+
+```bash
+git clone https://github.com/mathiastornblom/EliasMCP.git
+cd EliasMCP
 npm install
 npm run build
 ```
 
+Add to your MCP client config:
+
+```json
+{
+  "mcpServers": {
+    "elias": {
+      "command": "node",
+      "args": ["/path/to/EliasMCP/dist/index.js"],
+      "env": {
+        "ELIAS_BASE_URL": "https://elias.example.com:22130/api",
+        "ELIAS_USERNAME": "admin",
+        "ELIAS_PASSWORD": "secret"
+      }
+    }
+  }
+}
+```
+
+---
+
 ## Configuration
 
-### Option 1 — Runtime configuration via `elias_configure` tool
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `ELIAS_BASE_URL` | yes | `https://elias.example.com:22130/api` — must include `/api` |
+| `ELIAS_USERNAME` | yes | ELIAS login username |
+| `ELIAS_PASSWORD` | yes | ELIAS login password |
+| `ELIAS_DOMAIN` | no | Login domain (leave empty if not required) |
+| `ELIAS_IGNORE_TLS` | no | `true` to accept self-signed certificates |
+| `ELIAS_REQUEST_TIMEOUT_MS` | no | HTTP timeout in ms (default: 30000) |
+| `ELIAS_TEST_CONTAINER` | tests only | Container name used for destructive integration tests |
 
-After connecting Claude Desktop to this MCP server, use the `elias_configure` tool:
+> **Note:** You can also configure credentials at runtime using the `elias_configure` tool — no `.env` file needed.
+
+> **Warning:** `ELIAS_IGNORE_TLS=true` disables certificate verification. Use only with self-signed certificates in controlled environments.
+
+---
+
+## Runtime configuration
+
+After connecting to your MCP client, use `elias_configure` to set credentials without restarting:
 
 ```
 elias_configure(action="set", baseUrl="https://elias.example.com:22130/api", username="admin", password="secret")
@@ -32,51 +108,13 @@ To persist credentials across sessions:
 elias_configure(action="set", baseUrl="...", username="...", password="...", save=true)
 ```
 
-### Option 2 — Environment variables
+---
 
-Create a `.env` file (for development):
-
-```
-ELIAS_BASE_URL=https://elias.example.com:22130/api
-ELIAS_USERNAME=admin
-ELIAS_PASSWORD=secret
-ELIAS_DOMAIN=
-ELIAS_IGNORE_TLS=false
-ELIAS_REQUEST_TIMEOUT_MS=30000
-```
-
-> **Note:** `ELIAS_BASE_URL` must include the `/api` path segment.
-
-### Option 3 — Saved credential file
-
-Credentials are stored in `~/.elias-mcp.json` when you pass `save=true` to `elias_configure`.
-
-## Connecting to Claude Desktop
-
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "elias": {
-      "command": "node",
-      "args": ["/absolute/path/to/EliasMCP/dist/index.js"]
-    }
-  }
-}
-```
-
-Or use the included `.mcp.json`:
-
-```bash
-claude --mcp-config .mcp.json
-```
-
-## Available Tools
+## Available Tools (11)
 
 | Tool | Description |
 |------|-------------|
-| `elias_configure` | Configure ELIAS server credentials |
+| `elias_configure` | Set, inspect, or clear ELIAS credentials at runtime |
 | `elias_containers` | List, check, create, rename, or delete containers |
 | `elias_images` | Manage image definitions (IDF) — CRUD, sign, lock |
 | `elias_image_templates` | Manage image templates (IDT) — CRUD, sign, lock |
@@ -88,29 +126,28 @@ claude --mcp-config .mcp.json
 | `elias_access_control` | List, create, or delete access controls |
 | `elias_about` | Get copyright and version information for a container |
 
+---
+
 ## Authentication
 
-ELIAS uses Bearer token authentication via the `x-access-token` header. The server handles login automatically and refreshes the token on 401 responses.
+ELIAS uses Bearer token authentication. The client logs in via `POST /api/authenticate` and sends the token as an `x-access-token` header on every subsequent request. On a 401 response the client re-authenticates once and retries automatically.
 
-## TLS
+---
 
-For servers with self-signed certificates, set `ignoreTls=true` in `elias_configure` or `ELIAS_IGNORE_TLS=true` in your environment.
+## Running tests
 
-## Running Tests
+Tests require a live ELIAS server. Destructive operations run inside `ELIAS_TEST_CONTAINER`.
 
 ```bash
-export ELIAS_BASE_URL=https://elias.example.com:22130/api
-export ELIAS_USERNAME=admin
-export ELIAS_PASSWORD=secret
-export ELIAS_IGNORE_TLS=true          # if self-signed certificate
-export ELIAS_TEST_CONTAINER=mcp-test  # container used for destructive tests
-
+cp .env.example .env   # fill in your values
 npm test
 ```
 
 The test suite creates the test container if it does not exist and cleans it up on teardown.
 
-## ELIAS Concepts
+---
+
+## ELIAS concepts
 
 | Term | Description |
 |------|-------------|
@@ -119,3 +156,23 @@ The test suite creates the test container if it does not exist and cleans it up 
 | IDT | Image Definition Template — template for IDFs |
 | EPM | eLux Package Manager package (OS components) |
 | FPM | Feature Package Manager package (add-on features) |
+
+---
+
+## Architecture
+
+```
+src/
+  index.ts        MCP server entry point (stdio transport)
+  client.ts       EliasClient — x-access-token auth, undici TLS control
+  session.ts      Runtime credential store and ~/.elias-mcp.json persistence
+  types.ts        Shared helpers: ok(), fail(), buildQuery()
+  tools/          One file per functional group (11 tools total)
+catalog/
+  server.yaml     Docker MCP Registry submission metadata
+  tools.json      Static tool list for registry build validation
+.github/
+  workflows/
+    update-mcp-registry.yml   Auto-updates registry PR on every push to main
+    cleanup-runs.yml          Deletes failed workflow runs automatically
+```
