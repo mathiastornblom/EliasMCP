@@ -107,7 +107,7 @@ async function resolveAndSave(
   );
 
   // selfContained: true tells ELIAS to compute legacyIDF — ELIAS trusts the client's assertion.
-  const finalIdf = { ...clean, version: '3.0', container: platformVersion, packageList: [], epms, selfContained: true, imageSize };
+  const finalIdf = { ...clean, id: (clean.id as string | undefined) ?? `${n}.idf`, version: '3.0', container: platformVersion, packageList: [], epms, selfContained: true, imageSize };
 
   const saved = await client.request('PUT', `/${c}/idf/${n}.idf`, { overwrite, idf: finalIdf });
   return ok(saved);
@@ -137,12 +137,19 @@ async function execute(raw: unknown): Promise<McpToolResult> {
 
   if (input.action === 'create') {
     if (!input.idf) return fail('action=create requires idf.');
-    // POST creates the IDF record; resolveAndSave then solves and overwrites with full EPM data.
+    // ELIAS validates id/version/container even on the initial POST, so fetch about first.
+    const aboutData = await client.request<{ container?: string }>('GET', `/${c}/about`);
+    const augmented: Record<string, unknown> = {
+      id: `${input.name}.idf`,
+      version: '3.0',
+      container: aboutData?.container,
+      ...input.idf,
+    };
     await client.request('POST', `/${c}/idfs`, {
       overwrite: input.overwrite ?? false,
-      idf: input.idf,
+      idf: augmented,
     });
-    return resolveAndSave(client, c, n, input.idf, true);
+    return resolveAndSave(client, c, n, augmented, true);
   }
 
   if (input.action === 'update') {
