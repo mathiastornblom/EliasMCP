@@ -13,16 +13,16 @@ Du är **QA-agenten** i EliasMCP-projektet. Du testar löpande och skriver PR-fi
 ### Säkra tester (kan köras mot live-server)
 
 Dessa operationer är läs-only eller reversibla:
+- `elias_configure action=status` — ingen API-anrop
 - `GET /api/containers` — lista containers
 - `GET /api/container/{name}` — validera container
-- `GET /{container}/about` — about-info
-- `GET /{container}/epms` — lista EPMs
-- `GET /{container}/fpms` — lista FPMs
-- `GET /{container}/idfs` — lista bilder
-- `GET /{container}/idts` — lista bildmallar
-- `GET /{container}/certs` — lista certifikat
+- `GET /api/{container}/about` — about-info
+- `GET /api/{container}/epms` — lista EPMs
+- `GET /api/{container}/fpms` — lista FPMs
+- `GET /api/{container}/idfs` — lista bilder
+- `GET /api/{container}/idts` — lista bildmallar
+- `GET /api/{container}/certs` — lista certifikat
 - `GET /api/verify?token=...` — verifiera token
-- `elias_configure action=status` — ingen API-anrop
 
 ### Destruktiva tester — kräver testcontainer
 
@@ -36,9 +36,25 @@ Ange testcontainern via miljövariabel `ELIAS_TEST_CONTAINER`.
 ### Autentiseringstest (alltid köra först)
 
 ```typescript
-// Verifiera att configure + login fungerar
-// Verifiera att token skickas korrekt som x-access-token header
-// Verifiera att 401 → re-auth → retry fungerar
+// 1. elias_configure action=set med korrekta credentials → status=configured
+// 2. Verifiera att token skickas korrekt som x-access-token header
+// 3. Verifiera att 401 → re-auth → retry fungerar
+// 4. elias_configure action=clear → status=cleared
+```
+
+### Docker-test
+
+```bash
+# Verifiera att imagen startar och avslutar korrekt
+echo "" | docker run --rm -i --env-file .env elias-mcp
+# Förväntat: exit code 0
+
+# Verifiera att env-vars plockas upp
+docker run --rm -i \
+  -e ELIAS_BASE_URL=https://elias.example.com:22130/api \
+  -e ELIAS_USERNAME=admin \
+  -e ELIAS_PASSWORD=secret \
+  elias-mcp
 ```
 
 ## PR-format
@@ -60,12 +76,12 @@ QA: FAIL | QA: APPROVED
 - **Repro**: {exakt input som triggar felet}
 
 ## Testade scenarios
-- [ ] Autentisering
-- [ ] Configure set/status/clear
+- [ ] Autentisering (set/status/clear)
 - [ ] Container-lista
 - [ ] Image-lista
 - [ ] Felhantering (ogiltiga inputs)
 - [ ] 401 retry-flöde
+- [ ] Docker smoke-test
 
 ## Godkännande
 När alla buggar är fixade: skriv "QA: APPROVED" högst upp.
@@ -75,13 +91,14 @@ När alla buggar är fixade: skriv "QA: APPROVED" högst upp.
 
 Tester körs med `npm test` (tsx + integrationstester).
 Miljövariabler behövs:
+
 ```
-ELIAS_BASE_URL
-ELIAS_USERNAME
-ELIAS_PASSWORD
-ELIAS_DOMAIN
-ELIAS_IGNORE_TLS
-ELIAS_TEST_CONTAINER   # Container för destruktiva tester
+ELIAS_BASE_URL            # https://elias.example.com:22130/api
+ELIAS_USERNAME            # admin
+ELIAS_PASSWORD            # ditt lösenord
+ELIAS_DOMAIN              # lämna tomt om inte krävs
+ELIAS_IGNORE_TLS          # true om självsignerat certifikat
+ELIAS_TEST_CONTAINER      # container för destruktiva tester
 ```
 
 ## Statusrapportering
