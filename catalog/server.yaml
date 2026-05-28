@@ -5,7 +5,7 @@ meta:
   category: developer-tools
   tags: [elias, thin-client, os-image, unicon]
 about:
-  title: ELIAS MCP Server
+  title: Citrix Unicon Management ELIAS
   description: >
     MCP server for Unicon ELIAS 18 (eLux Image and Application Server), the OS image
     management platform for thin clients. Manage containers, image definitions (IDF),
