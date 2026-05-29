@@ -72,12 +72,29 @@ async function execute(raw: unknown): Promise<McpToolResult> {
     }
 
     const n = encodeURIComponent(input.name);
+    // Try JSON object body first (avoids checksum issues with string-encoded content).
+    // Fall back to text/plain for non-JSON formats (legacy IDF).
+    let body: unknown;
+    try {
+      body = JSON.parse(input.content);
+    } catch {
+      body = null;
+    }
+
+    if (body !== null && typeof body === 'object') {
+      const result = await client.request<unknown>(
+        'POST',
+        `/${c}/import${forcePrefix}/${n}${ext}`,
+        body,
+      );
+      return ok(result);
+    }
+
     const data = await client.requestText(
       'POST',
       `/${c}/import${forcePrefix}/${n}${ext}`,
       input.content,
     );
-
     try {
       return ok(JSON.parse(data));
     } catch {
