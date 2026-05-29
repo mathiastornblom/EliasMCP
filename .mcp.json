@@ -4,7 +4,7 @@
       "command": "docker",
       "args": ["run", "--rm", "-i",
         "--env-file", "/Users/mathiast/Documents/VSCode/EliasMCP/.env",
-        "elias-mcp-server"
+        "mathiast71/elias-mcp-server"
       ]
     }
   }
