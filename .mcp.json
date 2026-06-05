@@ -1,11 +1,8 @@
 {
   "mcpServers": {
     "elias": {
-      "command": "docker",
-      "args": ["run", "--rm", "-i",
-        "--env-file", "/Users/mathiast/Documents/VSCode/EliasMCP/.env",
-        "mathiast71/elias-mcp-server"
-      ]
+      "command": "bash",
+      "args": ["/Users/mathiast/Documents/VSCode/EliasMCP/scripts/elias-mcp.sh"]
     }
   }
 }
