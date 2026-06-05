@@ -27,11 +27,15 @@ function withTrailingSlash(path: string): string {
   return (base.endsWith('/') ? base : base + '/') + path.slice(qi);
 }
 
+// Proactively re-verify the token after this many milliseconds to avoid mid-request expiry.
+const TOKEN_VERIFY_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+
 export class EliasClient {
   private readonly baseUrl: string;
   private readonly timeoutMs: number;
   private readonly dispatcher: Agent | undefined;
   private token: string | null = null;
+  private tokenAcquiredAt: number | null = null;
 
   constructor(private readonly config: EliasConfig) {
     const ignoreTls = config.ignoreTls ?? false;
@@ -76,6 +80,32 @@ export class EliasClient {
     const data = (await res.json()) as { token?: string };
     if (!data.token) throw new EliasError('Login response missing token');
     this.token = data.token;
+    this.tokenAcquiredAt = Date.now();
+  }
+
+  /** Verify the current token is still accepted by the server; re-authenticate if not. */
+  async verifyOrRelogin(): Promise<void> {
+    if (!this.token) {
+      await this.login();
+      return;
+    }
+    const url = `${this.baseUrl}/verify/?token=${encodeURIComponent(this.token)}`;
+    try {
+      const res = await this.fetchWithTimeout(url, {
+        method: 'GET',
+        headers: { ...this.authHeaders(), Accept: 'application/json' },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ...(this.dispatcher ? { dispatcher: this.dispatcher as any } : {}),
+      });
+      const json = (await res.json()) as Record<string, unknown>;
+      if (!res.ok || json['isVerified'] === false) {
+        this.token = null;
+        this.tokenAcquiredAt = null;
+        await this.login();
+      }
+    } catch {
+      // If verify itself fails (network hiccup), fall through — the actual request will 401 and retry.
+    }
   }
 
   /** All API routes — prefixes path with /api */
@@ -114,7 +144,14 @@ export class EliasClient {
   }
 
   private async ensureAuth(): Promise<void> {
-    if (!this.token) await this.login();
+    if (!this.token) {
+      await this.login();
+      return;
+    }
+    // Proactively verify the token if it has been held for longer than TOKEN_VERIFY_INTERVAL_MS.
+    if (this.tokenAcquiredAt !== null && Date.now() - this.tokenAcquiredAt > TOKEN_VERIFY_INTERVAL_MS) {
+      await this.verifyOrRelogin();
+    }
   }
 
   private authHeaders(): Record<string, string> {
@@ -335,7 +372,9 @@ export function getClient(): EliasClient {
   const config = resolveConfig();
   if (!config) {
     throw new EliasError(
-      'ELIAS is not configured. Call the elias_configure tool with your server URL, username, and password.',
+      'ELIAS credentials are not set. Please call elias_configure with:\n' +
+      '  action="set", baseUrl="https://<host>/elias/api", username="<user>", password="<pass>"\n' +
+      'Optionally add domain="" and ignoreTls=true for self-signed certificates.',
     );
   }
 
